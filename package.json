@@ -5,9 +5,17 @@
   "main": "tib-finance/ServerCaller.js",
   "license": "MIT",
   "author": "TIB Finance",
+  "homepage": "https://doc.tib.finance",
   "repository": {
     "type": "git",
     "url": "https://github.com/TibFinance/TibNodeJsSdk"
+  },
+  "bugs": {
+    "url": "https://github.com/TibFinance/TibNodeJsSdk/issues"
+  },
+  "keywords": ["tib", "finance", "payment", "sdk", "api", "nodejs"],
+  "engines": {
+    "node": ">=14.0.0"
   },
   "dependencies": {
     "axios": "^1.13.5"
