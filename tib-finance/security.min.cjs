@@ -1,4 +1,9 @@
-﻿var System = {},
+﻿/**
+ * TIB Finance Security Library
+ * Cryptographic utilities for RSA/AES key exchange and data encryption.
+ * Copyright (c) TIB Finance 2025. All rights reserved.
+ */
+var System = {},
     Events, Trace, property, name;
 for (property in System.Type = function () {
         function t() {
