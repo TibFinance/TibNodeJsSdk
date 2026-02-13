@@ -1,0 +1,15 @@
+{
+  "name": "tib-finance",
+  "version": "2.0.0",
+  "description": "Node.js SDK for the TIB Finance payment processing API",
+  "main": "tib-finance/ServerCaller.js",
+  "license": "MIT",
+  "author": "TIB Finance",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TibFinance/TibNodeJsSdk"
+  },
+  "dependencies": {
+    "axios": "^1.13.5"
+  }
+}
