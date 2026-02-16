@@ -15,12 +15,6 @@ const security = SecurityMin.System.Security;
 
 
 class CryptoCaller {
-  // static serverURL = "";
-  // static sessionId = "";
-  // static serviceId;
-  // static clientId;
-  // static userName;
-  // static password;
 
   static initialize(serverURL) {
     this.serverURL = serverURL;

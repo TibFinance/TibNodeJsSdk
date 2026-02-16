@@ -15,8 +15,8 @@ npm install
 ## Quick Start
 
 ```javascript
-const { ServerCaller } = require('tib-finance/ServerCaller');
-const { CryptoCaller } = require('tib-finance/CryptoCaller');
+const { ServerCaller } = require('./tib-finance/ServerCaller');
+const { CryptoCaller } = require('./tib-finance/CryptoCaller');
 
 CryptoCaller.initialize("https://sandboxportal.tib.finance");
 
