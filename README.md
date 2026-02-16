@@ -16,9 +16,8 @@ npm install
 
 ```javascript
 const { ServerCaller } = require('./tib-finance/ServerCaller');
-const { CryptoCaller } = require('./tib-finance/CryptoCaller');
 
-CryptoCaller.initialize("https://sandboxportal.tib.finance");
+ServerCaller.initialize("https://sandboxportal.tib.finance");
 
 ServerCaller.createSession("your_client_id", "your_username", "your_password")
   .then(response => {
