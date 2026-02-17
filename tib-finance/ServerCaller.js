@@ -101,7 +101,7 @@ class ServerCaller {
     }
 
     /**
-     * Gets the boarding status for a service.
+     * Lists the merchants with boarding.
      * @param {string} sessionToken
      * @param {string} boardingServiceId
      * @returns {object}
@@ -192,19 +192,23 @@ class ServerCaller {
     }
 
     /**
-     * Saves the merchant account information.
+     * Saves the merchant account information. This operation is protected by two-factor authentication.
      * @param {string} sessionToken
      * @param {string} merchantId
      * @param {AccountModel} account
+     * @param {string} twoFactorCode
+     * @param {string} twoFactorSecurityAnswer
      * @returns {object}
      */
-    static saveMerchantAccountInfo(sessionToken, merchantId, account) {
+    static saveMerchantAccountInfo(sessionToken, merchantId, account, twoFactorCode, twoFactorSecurityAnswer) {
         var methodName = "/Data/SaveMerchantAccountInfo";
 
         var data = {
             "SessionToken": sessionToken,
             "MerchantId": merchantId,
             "Account": account,
+            "TwoFactorCode": twoFactorCode,
+            "TwoFactorSecurityAnswer": twoFactorSecurityAnswer,
         };
 
         return CryptoCaller.callTibFinance(methodName, data);
@@ -247,7 +251,7 @@ class ServerCaller {
     }
 
     /**
-     * Adjusts the wallet balance.
+     * Adjusts the wallet balance for a merchant.
      * @param {string} sessionToken
      * @param {string} serviceId
      * @param {string} merchantId
@@ -646,7 +650,7 @@ class ServerCaller {
     }
 
     /**
-     * Lists the transfers using an optimized fast query.
+     * Lists transfers using an optimized fast query.
      * @param {string} sessionToken
      * @param {Date} fromDate
      * @param {Date} toDate
@@ -679,7 +683,7 @@ class ServerCaller {
     }
 
     /**
-     * Lists the transfers for a specific bill using an optimized fast query.
+     * Lists the transfers of a bill.
      * @param {string} sessionToken
      * @param {string} merchantId
      * @param {string} billId
@@ -698,7 +702,7 @@ class ServerCaller {
     }
 
     /**
-     * Retrieves the list of recurring transfers.
+     * Lists recurring transfers for a merchant.
      * @param {string} sessionToken
      * @param {string} serviceId
      * @returns {object}
@@ -995,7 +999,7 @@ class ServerCaller {
     }
 
     /**
-     * Creates a batch of free operations for processing multiple transactions.
+     * Creates a batch of free operations.
      * @param {string} sessionToken
      * @param {Array} freeOperationBatchList
      * @param {string} groupId
@@ -1016,7 +1020,7 @@ class ServerCaller {
     }
 
     /**
-     * Reverts a previously executed transfer.
+     * Reverts a completed transfer.
      * @param {string} sessionToken
      * @param {string} transferId
      * @returns {object}
@@ -1033,7 +1037,7 @@ class ServerCaller {
     }
 
     /**
-     * Changes the security question and answer for an Interac payment method.
+     * Modifies the security question and answer for an Interac payment method associated with a customer account.
      * @param {string} sessionToken
      * @param {string} interacPaymentMethodId
      * @param {string} interacQuestion
@@ -1056,7 +1060,7 @@ class ServerCaller {
     }
 
     /**
-     * Initializes the boarding process for a merchant.
+     * Initializes the merchant boarding process.
      * @param {string} sessionToken
      * @param {string} serviceId
      * @returns {object}
@@ -1073,7 +1077,7 @@ class ServerCaller {
     }
 
     /**
-     * Creates a new sub-client under the current client account.
+     * Creates a sub-client account.
      * @param {string} sessionToken
      * @param {string} name
      * @param {string} language
@@ -1094,7 +1098,7 @@ class ServerCaller {
     }
 
     /**
-     * Resends the payment notification email.
+     * Resends a payment notification email.
      * @param {string} sessionToken
      * @param {string} paymentId
      * @param {string} merchantId
@@ -1113,7 +1117,7 @@ class ServerCaller {
     }
 
     /**
-     * Relaunches a failed transfer for a merchant.
+     * Relaunches a failed merchant transfer.
      * @param {string} sessionToken
      * @param {string} transferId
      * @param {string} merchantId
@@ -1167,7 +1171,7 @@ class ServerCaller {
     }
 
     /**
-     * Retrieves the list of suppliers associated with a merchant.
+     * Retrieves the list of suppliers for a merchant.
      * @param {string} sessionToken
      * @param {string} merchantId
      * @returns {object}
@@ -1184,7 +1188,7 @@ class ServerCaller {
     }
 
     /**
-     * Creates a new supplier associated with a merchant.
+     * Creates a new supplier for a merchant.
      * @param {string} sessionToken
      * @param {string} merchantId
      * @param {string} supplierName
@@ -1215,7 +1219,7 @@ class ServerCaller {
     }
 
     /**
-     * Retrieves wallet operations and transaction history for a specified service within a date range.
+     * Retrieves wallet operations and transaction history for a merchant.
      * @param {string} sessionToken
      * @param {string} serviceId
      * @param {Date} from
