@@ -63,7 +63,7 @@ class ServerCaller {
     }
 
     /**
-     * Retrieves wallet information for a specific service.
+     * Retrieves wallet information for a service, including the effective balance (wallet balance plus available delay buffer minus pending collections), the risk-adjusted withdrawable amount, processing status, and whether the new wallet feature is active.
      * @param {string} sessionToken
      * @param {string} serviceId
      * @returns {object}
@@ -251,7 +251,7 @@ class ServerCaller {
     }
 
     /**
-     * Adjusts the wallet balance for a merchant.
+     * Lists the customers.
      * @param {string} sessionToken
      * @param {string} serviceId
      * @param {string} merchantId
@@ -650,7 +650,7 @@ class ServerCaller {
     }
 
     /**
-     * Lists transfers using an optimized fast query.
+     * Retrieves a filtered, summarized list of transfers for a service using an optimized query. Supports filtering by transfer type, date range, merchant, transfer group, error status, and resolved status.
      * @param {string} sessionToken
      * @param {Date} fromDate
      * @param {Date} toDate
@@ -702,7 +702,7 @@ class ServerCaller {
     }
 
     /**
-     * Lists recurring transfers for a merchant.
+     * Retrieves all active recurring transfers for a given service, including their next scheduled recurrence date and associated merchant information.
      * @param {string} sessionToken
      * @param {string} serviceId
      * @returns {object}
@@ -719,7 +719,7 @@ class ServerCaller {
     }
 
     /**
-     * Deletes a recurring transfer.
+     * Deletes a recurring transfer by its identifier, stopping all future scheduled occurrences.
      * @param {string} sessionToken
      * @param {string} recuringTransferId
      * @returns {object}
@@ -965,13 +965,14 @@ class ServerCaller {
      * @param {string} transferDescription
      * @param {string} transferExternalSystemNumber
      * @param {string} transferFrequency
+     * @param {Date} recurringEndDate
      * @param {string} groupId
      * @param {boolean} immediateTransfer
      * @param {string} statementDescription
      * @param {boolean} stopSameIdentifications
      * @returns {object}
      */
-    static createFreeOperation(sessionToken, merchantId, billId, customerId, paymentMethodId, transferType, referenceNumber, amount, language, transactionDueDate, transferTitle, transferDescription, transferExternalSystemNumber, transferFrequency, groupId, immediateTransfer, statementDescription, stopSameIdentifications) {
+    static createFreeOperation(sessionToken, merchantId, billId, customerId, paymentMethodId, transferType, referenceNumber, amount, language, transactionDueDate, transferTitle, transferDescription, transferExternalSystemNumber, transferFrequency, recurringEndDate, groupId, immediateTransfer, statementDescription, stopSameIdentifications) {
         var methodName = "/Data/CreateFreeOperation";
 
         var data = {
@@ -989,6 +990,7 @@ class ServerCaller {
             "TransferDescription": transferDescription,
             "TransferExternalSystemNumber": transferExternalSystemNumber,
             "TransferFrequency": transferFrequency,
+            "RecurringEndDate": recurringEndDate,
             "GroupId": groupId,
             "ImmediateTransfer": immediateTransfer,
             "StatementDescription": statementDescription,
@@ -999,7 +1001,7 @@ class ServerCaller {
     }
 
     /**
-     * Creates a batch of free operations.
+     * Creates a batch of free operations (deposits or collections) in a single call. Validates that client onboarding (KYC) is completed before allowing free deposit operations.
      * @param {string} sessionToken
      * @param {Array} freeOperationBatchList
      * @param {string} groupId
@@ -1020,7 +1022,7 @@ class ServerCaller {
     }
 
     /**
-     * Reverts a completed transfer.
+     * Reverts (cancels or reverses) a transfer. For pending gateway payments, deletes the transfer and its public token. For processed payments, creates reversal operations for each non-fee operation. Rejects transfers over $5,000 or wallet-type transfers.
      * @param {string} sessionToken
      * @param {string} transferId
      * @returns {object}
@@ -1037,7 +1039,7 @@ class ServerCaller {
     }
 
     /**
-     * Modifies the security question and answer for an Interac payment method associated with a customer account.
+     * Updates the security question and answer on an existing Interac payment method. Creates a replacement payment method with the new credentials and deletes the old one. The answer is encrypted via the external data vault, and both question and answer are obfuscated in logs.
      * @param {string} sessionToken
      * @param {string} interacPaymentMethodId
      * @param {string} interacQuestion
@@ -1060,7 +1062,7 @@ class ServerCaller {
     }
 
     /**
-     * Initializes the merchant boarding process.
+     * Initializes the merchant onboarding (boarding) process for a service. Generates a public access token and returns a redirect URL to either the direct login page (if a service-level login exists) or the boarding sign-up wizard.
      * @param {string} sessionToken
      * @param {string} serviceId
      * @returns {object}
@@ -1077,7 +1079,7 @@ class ServerCaller {
     }
 
     /**
-     * Creates a sub-client account.
+     * Creates a new sub-client (child service) under the authenticated client's account. The sub-client is represented as a service entity with its own name, language, and currency.
      * @param {string} sessionToken
      * @param {string} name
      * @param {string} language
@@ -1098,7 +1100,7 @@ class ServerCaller {
     }
 
     /**
-     * Resends a payment notification email.
+     * Resends the payment notification email to the customer associated with a specific payment.
      * @param {string} sessionToken
      * @param {string} paymentId
      * @param {string} merchantId
@@ -1117,7 +1119,7 @@ class ServerCaller {
     }
 
     /**
-     * Relaunches a failed merchant transfer.
+     * Relaunches (retries) a previously failed transfer for a merchant. Resets the failed payment in the database for reprocessing and sends an internal notification email with the transfer details.
      * @param {string} sessionToken
      * @param {string} transferId
      * @param {string} merchantId
@@ -1136,7 +1138,7 @@ class ServerCaller {
     }
 
     /**
-     * Creates a transfer to a supplier.
+     * Creates a payment transfer from the calling merchant to a supplier. Validates both merchants, runs business rules on the sending merchant's limits, creates the transfer as a free collection, and optionally creates a bill. Notifies the supplier unless client approval is required.
      * @param {string} sessionToken
      * @param {string} merchantId
      * @param {number} amount
@@ -1145,12 +1147,13 @@ class ServerCaller {
      * @param {string} currency
      * @param {string} language
      * @param {string} transferFrequency
+     * @param {Date} recurringEndDate
      * @param {string} billNumber
      * @param {string} billDescription
      * @param {string} billTitle
      * @returns {object}
      */
-    static createSupplierTransfer(sessionToken, merchantId, amount, transferDueDate, targetMerchantId, currency, language, transferFrequency, billNumber, billDescription, billTitle) {
+    static createSupplierTransfer(sessionToken, merchantId, amount, transferDueDate, targetMerchantId, currency, language, transferFrequency, recurringEndDate, billNumber, billDescription, billTitle) {
         var methodName = "/Data/CreateSupplierTransfer";
 
         var data = {
@@ -1162,6 +1165,7 @@ class ServerCaller {
             "Currency": currency,
             "Language": language,
             "TransferFrequency": transferFrequency,
+            "RecurringEndDate": recurringEndDate,
             "BillNumber": billNumber,
             "BillDescription": billDescription,
             "BillTitle": billTitle,
@@ -1171,7 +1175,7 @@ class ServerCaller {
     }
 
     /**
-     * Retrieves the list of suppliers for a merchant.
+     * Retrieves the list of suppliers associated with a merchant, returning each supplier's name and identifier.
      * @param {string} sessionToken
      * @param {string} merchantId
      * @returns {object}
@@ -1188,7 +1192,7 @@ class ServerCaller {
     }
 
     /**
-     * Creates a new supplier for a merchant.
+     * Creates or registers a supplier for a merchant. If a supplier with the given email already exists, reuses that supplier; otherwise provisions a new client, service, merchant, and login. Links the supplier to the calling merchant and creates a reciprocal customer record in the supplier's service.
      * @param {string} sessionToken
      * @param {string} merchantId
      * @param {string} supplierName
@@ -1219,7 +1223,64 @@ class ServerCaller {
     }
 
     /**
-     * Retrieves wallet operations and transaction history for a merchant.
+     * 
+     * @param {string} sessionToken
+     * @param {string} merchantId
+     * @returns {object}
+     */
+    static listSuppliers(sessionToken, merchantId) {
+        var methodName = "/Data/ListSuppliers";
+
+        var data = {
+            "SessionToken": sessionToken,
+            "MerchantId": merchantId,
+        };
+
+        return CryptoCaller.callTibFinance(methodName, data);
+    }
+
+    /**
+     * 
+     * @param {string} sessionToken
+     * @param {string} merchantId
+     * @param {string} merchantSupplierId
+     * @param {string} supplierName
+     * @returns {object}
+     */
+    static updateSupplierAlias(sessionToken, merchantId, merchantSupplierId, supplierName) {
+        var methodName = "/Data/UpdateSupplierAlias";
+
+        var data = {
+            "SessionToken": sessionToken,
+            "MerchantId": merchantId,
+            "MerchantSupplierId": merchantSupplierId,
+            "SupplierName": supplierName,
+        };
+
+        return CryptoCaller.callTibFinance(methodName, data);
+    }
+
+    /**
+     * 
+     * @param {string} sessionToken
+     * @param {string} merchantId
+     * @param {string} merchantSupplierId
+     * @returns {object}
+     */
+    static deleteSupplier(sessionToken, merchantId, merchantSupplierId) {
+        var methodName = "/Data/DeleteSupplier";
+
+        var data = {
+            "SessionToken": sessionToken,
+            "MerchantId": merchantId,
+            "MerchantSupplierId": merchantSupplierId,
+        };
+
+        return CryptoCaller.callTibFinance(methodName, data);
+    }
+
+    /**
+     * Retrieves wallet operation history for a service within a specified date range. Returns the list of daily operations, the wallet balance as of the start date, and the configured delay buffer amount.
      * @param {string} sessionToken
      * @param {string} serviceId
      * @param {Date} from
