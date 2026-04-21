@@ -101,7 +101,7 @@ class ServerCaller {
     }
 
     /**
-     * Lists the merchants with boarding.
+     * Retrieves the payment provider boarding (onboarding) status for all merchants within a service. Returns each merchant's boarding progress with their current status.
      * @param {string} sessionToken
      * @param {string} boardingServiceId
      * @returns {object}
@@ -1223,7 +1223,7 @@ class ServerCaller {
     }
 
     /**
-     * 
+     * Lists suppliers linked to the specified merchant, including detailed information such as supplier name, email address, and creation date. For a lightweight name-and-ID-only list, use GetSuppliers instead.
      * @param {string} sessionToken
      * @param {string} merchantId
      * @returns {object}
@@ -1240,7 +1240,7 @@ class ServerCaller {
     }
 
     /**
-     * 
+     * Updates the display name (alias) that the payer uses to identify a supplier. The alias is a payer-side label and does not affect the supplier's own merchant name.
      * @param {string} sessionToken
      * @param {string} merchantId
      * @param {string} merchantSupplierId
@@ -1261,7 +1261,7 @@ class ServerCaller {
     }
 
     /**
-     * 
+     * Soft-deletes a supplier link for the specified merchant. The supplier's merchant account is not affected â€” only the payer-to-supplier association is removed.
      * @param {string} sessionToken
      * @param {string} merchantId
      * @param {string} merchantSupplierId
@@ -1274,6 +1274,69 @@ class ServerCaller {
             "SessionToken": sessionToken,
             "MerchantId": merchantId,
             "MerchantSupplierId": merchantSupplierId,
+        };
+
+        return CryptoCaller.callTibFinance(methodName, data);
+    }
+
+    /**
+     * Lists supplier transfers initiated by the calling merchant (identified via FeeMerchantId). Returns transfers where the caller is the fee-payer, with optional datestatus filters.
+     * @param {string} sessionToken
+     * @param {string} merchantId
+     * @param {Date} fromDate
+     * @param {Date} toDate
+     * @param {boolean} onlyWithErrors
+     * @param {boolean} markResolvedOnly
+     * @param {string} transferGroupId
+     * @param {string} supplierMerchantId
+     * @returns {object}
+     */
+    static listSupplierTransfers(sessionToken, merchantId, fromDate, toDate, onlyWithErrors, markResolvedOnly, transferGroupId, supplierMerchantId) {
+        var methodName = "/Data/ListSupplierTransfers";
+
+        var data = {
+            "SessionToken": sessionToken,
+            "MerchantId": merchantId,
+            "FromDate": fromDate,
+            "ToDate": toDate,
+            "OnlyWithErrors": onlyWithErrors,
+            "MarkResolvedOnly": markResolvedOnly,
+            "TransferGroupId": transferGroupId,
+            "SupplierMerchantId": supplierMerchantId,
+        };
+
+        return CryptoCaller.callTibFinance(methodName, data);
+    }
+
+    /**
+     * Retrieves a single supplier transfer by ID. Accessible to both the fee-payer and the supplier. Returns the transfer details along with the counterparty name and the caller's role.
+     * @param {string} sessionToken
+     * @param {string} transferId
+     * @returns {object}
+     */
+    static getSupplierTransfer(sessionToken, transferId) {
+        var methodName = "/Data/GetSupplierTransfer";
+
+        var data = {
+            "SessionToken": sessionToken,
+            "TransferId": transferId,
+        };
+
+        return CryptoCaller.callTibFinance(methodName, data);
+    }
+
+    /**
+     * Lists recurring supplier transfers initiated by the calling merchant. Returns recurring transfer configurations where the caller is the fee-payer.
+     * @param {string} sessionToken
+     * @param {string} merchantId
+     * @returns {object}
+     */
+    static listSupplierRecurringTransfers(sessionToken, merchantId) {
+        var methodName = "/Data/ListSupplierRecurringTransfers";
+
+        var data = {
+            "SessionToken": sessionToken,
+            "MerchantId": merchantId,
         };
 
         return CryptoCaller.callTibFinance(methodName, data);
