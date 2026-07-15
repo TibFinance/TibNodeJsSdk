@@ -27,7 +27,7 @@ class CryptoCaller {
    */
   static getPublicKey() {
 
-    return axios.post(this.serverURL + "/data/GetPublicKey");
+    return axios.post(this.serverURL + "/data/GetPublicKey", null, { timeout: 120000 });
   }
 
   /**
@@ -95,7 +95,7 @@ class CryptoCaller {
     return new Promise(function (resolve, reject) {
       axios.post(CryptoCaller.serverURL + "/data/ExecuteKeyExchange", {
           key: keyExchangeData,
-        })
+        }, { timeout: 120000 })
         .then((res) => {
           resolve(
             {
@@ -130,7 +130,7 @@ class CryptoCaller {
     };
 
     return new Promise(function (resolve, reject) {
-      axios.post(CryptoCaller.serverURL + url, { data: data })
+      axios.post(CryptoCaller.serverURL + url, { data: data }, { timeout: 120000 })
       .then( res => {
         resolve({
           cryptedData: res.data.CryptedBase64Data,

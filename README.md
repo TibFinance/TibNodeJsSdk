@@ -12,6 +12,8 @@ cd TibNodeJsSdk
 npm install
 ```
 
+Alternatively, download the packaged tarball (`.tgz`) from the latest [GitHub release](https://github.com/TibFinance/TibNodeJsSdk/releases) and install it with `npm install <file>.tgz`.
+
 ## Quick Start
 
 ```javascript
@@ -21,15 +23,20 @@ ServerCaller.initialize("https://sandboxportal.tib.finance");
 
 ServerCaller.createSession("your_client_id", "your_username", "your_password")
   .then(response => {
+    if (response.HasError) {
+      console.error("Session failed:", response.Messages);
+      return;
+    }
     console.log(response.SessionId);
-  });
+  })
+  .catch(err => console.error("Request failed:", err.message || err));
 ```
 
 ## Documentation
 
 For the complete API reference and guides, visit [doc.tib.finance](https://doc.tib.finance).
 
-This SDK provides access to **56 API methods** for payment processing, merchant management, and financial operations.
+This SDK provides access to **62 API methods** for payment processing, merchant management, and financial operations.
 
 ## Other TIB Finance SDKs
 
