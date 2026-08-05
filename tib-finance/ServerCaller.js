@@ -137,6 +137,35 @@ class ServerCaller {
     }
 
     /**
+     * Adds a new bank account (i.e., new merchant in TIB's data model) to an existing fully-boarded service. Authorizes the new merchant on insert. One-shot semantic: no pending state, no approval workflow, no confirmation email. Owner and Currency are inherited from an active sibling merchant on the same service. This is a parallel path to CreateMerchant (which serves boarding's first-merchant insert).
+     * @param {string} sessionToken
+     * @param {string} serviceId
+     * @param {string} name
+     * @param {string} email
+     * @param {string} language
+     * @param {string} bankNumber
+     * @param {string} institutionNumber
+     * @param {string} accountNumber
+     * @returns {object}
+     */
+    static addBankAccount(sessionToken, serviceId, name, email, language, bankNumber, institutionNumber, accountNumber) {
+        var methodName = "/Data/AddBankAccount";
+
+        var data = {
+            "SessionToken": sessionToken,
+            "ServiceId": serviceId,
+            "Name": name,
+            "Email": email,
+            "Language": language,
+            "BankNumber": bankNumber,
+            "InstitutionNumber": institutionNumber,
+            "AccountNumber": accountNumber,
+        };
+
+        return CryptoCaller.callTibFinance(methodName, data);
+    }
+
+    /**
      * Gets the merchant.
      * @param {string} sessionToken
      * @param {string} merchantId
@@ -251,7 +280,7 @@ class ServerCaller {
     }
 
     /**
-     * Lists the customers.
+     * Adjusts a merchant's wallet balance. IncreaseWallet collects the amount from the merchant (by EFT, or by Interac when requested) and credits the wallet; DecreaseWallet withdraws it from the wallet balance, subject to the risk-adjusted withdrawable balance. Requires the wallet feature to be enabled for the service.
      * @param {string} sessionToken
      * @param {string} serviceId
      * @param {string} merchantId
@@ -346,6 +375,25 @@ class ServerCaller {
             "SessionToken": sessionToken,
             "Customer": customer,
             "MerchantId": merchantId,
+        };
+
+        return CryptoCaller.callTibFinance(methodName, data);
+    }
+
+    /**
+     * Updates only a customer's contact information (email, phone, address, language) without touching the rest of the customer record. Use this when editing the contact card in isolation: fields left null preserve the stored value, empty strings clear it, and non-empty values overwrite.
+     * @param {string} sessionToken
+     * @param {string} customerId
+     * @param {ContactInfoModel} contactInfo
+     * @returns {object}
+     */
+    static saveCustomerContactInfo(sessionToken, customerId, contactInfo) {
+        var methodName = "/Data/SaveCustomerContactInfo";
+
+        var data = {
+            "SessionToken": sessionToken,
+            "CustomerId": customerId,
+            "ContactInfo": contactInfo,
         };
 
         return CryptoCaller.callTibFinance(methodName, data);
@@ -846,15 +894,17 @@ class ServerCaller {
      * @param {string} sessionToken
      * @param {string} rawAcpFileContent
      * @param {string} merchantId
+     * @param {boolean} isImmediate
      * @returns {object}
      */
-    static createTransactionFromRaw(sessionToken, rawAcpFileContent, merchantId) {
+    static createTransactionFromRaw(sessionToken, rawAcpFileContent, merchantId, isImmediate) {
         var methodName = "/Data/CreateTransactionFromRaw";
 
         var data = {
             "SessionToken": sessionToken,
             "RawAcpFileContent": rawAcpFileContent,
             "MerchantId": merchantId,
+            "IsImmediate": isImmediate,
         };
 
         return CryptoCaller.callTibFinance(methodName, data);
@@ -892,7 +942,7 @@ class ServerCaller {
     }
 
     /**
-     * Forces the payment process.
+     * Forces immediate processing of a transfer that would otherwise wait for the next scheduled run. For supplier transfers, only the paying merchant (fee-payer) can force-process; the recipient supplier cannot force-execute a transfer they did not create.
      * @param {string} sessionToken
      * @param {string} paymentId
      * @returns {object}
@@ -1022,7 +1072,7 @@ class ServerCaller {
     }
 
     /**
-     * Reverts (cancels or reverses) a transfer. For pending gateway payments, deletes the transfer and its public token. For processed payments, creates reversal operations for each non-fee operation. Rejects transfers over $5,000 or wallet-type transfers.
+     * Reverts (cancels or reverses) a transfer. For pending gateway payments, deletes the transfer and its public token. For processed payments, creates reversal operations for each non-fee operation. Rejects transfers over $5,000 or wallet-type transfers. For supplier transfers, only the paying merchant (fee-payer) can revert; the recipient supplier cannot revert a transfer they did not create.
      * @param {string} sessionToken
      * @param {string} transferId
      * @returns {object}
@@ -1056,23 +1106,6 @@ class ServerCaller {
             "InteracQuestion": interacQuestion,
             "InteracAnswer": interacAnswer,
             "MerchantId": merchantId,
-        };
-
-        return CryptoCaller.callTibFinance(methodName, data);
-    }
-
-    /**
-     * Initializes the merchant onboarding (boarding) process for a service. Generates a public access token and returns a redirect URL to either the direct login page (if a service-level login exists) or the boarding sign-up wizard.
-     * @param {string} sessionToken
-     * @param {string} serviceId
-     * @returns {object}
-     */
-    static initBoarding(sessionToken, serviceId) {
-        var methodName = "/Data/InitBoarding";
-
-        var data = {
-            "SessionToken": sessionToken,
-            "ServiceId": serviceId,
         };
 
         return CryptoCaller.callTibFinance(methodName, data);
@@ -1261,7 +1294,7 @@ class ServerCaller {
     }
 
     /**
-     * Soft-deletes a supplier link for the specified merchant. The supplier's merchant account is not affected â€” only the payer-to-supplier association is removed.
+     * Soft-deletes a supplier link for the specified merchant. The supplier's merchant account is not affected — only the payer-to-supplier association is removed.
      * @param {string} sessionToken
      * @param {string} merchantId
      * @param {string} merchantSupplierId
@@ -1280,7 +1313,7 @@ class ServerCaller {
     }
 
     /**
-     * Lists supplier transfers initiated by the calling merchant (identified via FeeMerchantId). Returns transfers where the caller is the fee-payer, with optional datestatus filters.
+     * Lists supplier transfers initiated by the calling merchant (identified via FeeMerchantId). Returns transfers where the caller is the fee-payer, with optional date/status filters.
      * @param {string} sessionToken
      * @param {string} merchantId
      * @param {Date} fromDate
@@ -1337,6 +1370,23 @@ class ServerCaller {
         var data = {
             "SessionToken": sessionToken,
             "MerchantId": merchantId,
+        };
+
+        return CryptoCaller.callTibFinance(methodName, data);
+    }
+
+    /**
+     * Lists recurring supplier transfers across an entire service. Returns every non-deleted recurring supplier transfer where any merchant in the given service is the fee-payer, with the supplier merchant's name on each entry. Use this to view all recurring supplier payments service-wide; use ListSupplierRecurringTransfers when scoping to a single fee-paying merchant.
+     * @param {string} sessionToken
+     * @param {string} serviceId
+     * @returns {object}
+     */
+    static listSupplierRecurringTransfersByService(sessionToken, serviceId) {
+        var methodName = "/Data/ListSupplierRecurringTransfersByService";
+
+        var data = {
+            "SessionToken": sessionToken,
+            "ServiceId": serviceId,
         };
 
         return CryptoCaller.callTibFinance(methodName, data);
