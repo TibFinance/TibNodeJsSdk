@@ -221,7 +221,7 @@ class ServerCaller {
     }
 
     /**
-     * Saves the merchant account information. This operation is protected by two-factor authentication.
+     * Saves the merchant account information. This operation is protected by two-factor authentication. On first use the response carries two-factor setup instructions (TwoFactorStatus and TwoFactorSetupData); see the Two-factor authentication guide.
      * @param {string} sessionToken
      * @param {string} merchantId
      * @param {AccountModel} account
@@ -280,16 +280,17 @@ class ServerCaller {
     }
 
     /**
-     * Adjusts a merchant's wallet balance. IncreaseWallet collects the amount from the merchant (by EFT, or by Interac when requested) and credits the wallet; DecreaseWallet withdraws it from the wallet balance, subject to the risk-adjusted withdrawable balance. Requires the wallet feature to be enabled for the service.
+     * Adjusts a merchant's wallet balance. IncreaseWallet collects the amount from the merchant (by EFT, or by Interac when requested) and credits the wallet; DecreaseWallet withdraws it from the wallet balance, subject to the risk-adjusted withdrawable balance. Requires the wallet feature to be enabled for the service. This operation supports idempotency via the IdempotencyKey field.
      * @param {string} sessionToken
      * @param {string} serviceId
      * @param {string} merchantId
      * @param {number} amount
      * @param {string} mode
      * @param {boolean} useInterac
+     * @param {string} idempotencyKey
      * @returns {object}
      */
-    static adjustWallet(sessionToken, serviceId, merchantId, amount, mode, useInterac) {
+    static adjustWallet(sessionToken, serviceId, merchantId, amount, mode, useInterac, idempotencyKey) {
         var methodName = "/Data/AdjustWallet";
 
         var data = {
@@ -299,6 +300,7 @@ class ServerCaller {
             "Amount": amount,
             "Mode": mode,
             "UseInterac": useInterac,
+            "IdempotencyKey": idempotencyKey,
         };
 
         return CryptoCaller.callTibFinance(methodName, data);
@@ -782,7 +784,7 @@ class ServerCaller {
     }
 
     /**
-     * Creates the payment.
+     * Creates the payment. This operation supports idempotency via the IdempotencyKey field.
      * @param {string} sessionToken
      * @param {string} billId
      * @param {boolean} setPaymentCustomerFromBill
@@ -796,9 +798,10 @@ class ServerCaller {
      * @param {boolean} doNotSendEmail
      * @param {boolean} immediateTransfer
      * @param {string} statementDescription
+     * @param {string} idempotencyKey
      * @returns {object}
      */
-    static createPayment(sessionToken, billId, setPaymentCustomerFromBill, customerEmail, paymentInfo, merchantId, externalReferenceId, safetyToBreakIfOverRemainingBillAmount, autorizedPaymentMethod, askForCustomerConsent, doNotSendEmail, immediateTransfer, statementDescription) {
+    static createPayment(sessionToken, billId, setPaymentCustomerFromBill, customerEmail, paymentInfo, merchantId, externalReferenceId, safetyToBreakIfOverRemainingBillAmount, autorizedPaymentMethod, askForCustomerConsent, doNotSendEmail, immediateTransfer, statementDescription, idempotencyKey) {
         var methodName = "/Data/CreatePayment";
 
         var data = {
@@ -815,6 +818,7 @@ class ServerCaller {
             "DoNotSendEmail": doNotSendEmail,
             "ImmediateTransfer": immediateTransfer,
             "StatementDescription": statementDescription,
+            "IdempotencyKey": idempotencyKey,
         };
 
         return CryptoCaller.callTibFinance(methodName, data);
@@ -855,7 +859,7 @@ class ServerCaller {
     }
 
     /**
-     * Creates the direct Interac transaction
+     * Creates the direct Interac transaction. This operation supports idempotency via the IdempotencyKey field.
      * @param {string} sessionToken
      * @param {string} merchantId
      * @param {InteracModel} interacInformation
@@ -866,9 +870,10 @@ class ServerCaller {
      * @param {string} currency
      * @param {string} language
      * @param {string} referenceNumber
+     * @param {string} idempotencyKey
      * @returns {object}
      */
-    static createDirectInteracTransaction(sessionToken, merchantId, interacInformation, transferDirection, dueDate, amount, statementDescription, currency, language, referenceNumber) {
+    static createDirectInteracTransaction(sessionToken, merchantId, interacInformation, transferDirection, dueDate, amount, statementDescription, currency, language, referenceNumber, idempotencyKey) {
         var methodName = "/Data/CreateDirectInteracTransaction";
 
         var data = {
@@ -882,20 +887,22 @@ class ServerCaller {
             "Currency": currency,
             "Language": language,
             "ReferenceNumber": referenceNumber,
+            "IdempotencyKey": idempotencyKey,
         };
 
         return CryptoCaller.callTibFinance(methodName, data);
     }
 
     /**
-     * Creates the transaction from raw.
+     * Creates the transaction from raw. This operation supports idempotency via the IdempotencyKey field.
      * @param {string} sessionToken
      * @param {string} rawAcpFileContent
      * @param {string} merchantId
      * @param {boolean} isImmediate
+     * @param {string} idempotencyKey
      * @returns {object}
      */
-    static createTransactionFromRaw(sessionToken, rawAcpFileContent, merchantId, isImmediate) {
+    static createTransactionFromRaw(sessionToken, rawAcpFileContent, merchantId, isImmediate, idempotencyKey) {
         var methodName = "/Data/CreateTransactionFromRaw";
 
         var data = {
@@ -903,6 +910,7 @@ class ServerCaller {
             "RawAcpFileContent": rawAcpFileContent,
             "MerchantId": merchantId,
             "IsImmediate": isImmediate,
+            "IdempotencyKey": idempotencyKey,
         };
 
         return CryptoCaller.callTibFinance(methodName, data);
@@ -940,17 +948,19 @@ class ServerCaller {
     }
 
     /**
-     * Forces immediate processing of a transfer that would otherwise wait for the next scheduled run. For supplier transfers, only the paying merchant (fee-payer) can force-process; the recipient supplier cannot force-execute a transfer they did not create.
+     * Forces immediate processing of a transfer that would otherwise wait for the next scheduled run. For supplier transfers, only the paying merchant (fee-payer) can force-process; the recipient supplier cannot force-execute a transfer they did not create. This operation supports idempotency via the IdempotencyKey field.
      * @param {string} sessionToken
      * @param {string} paymentId
+     * @param {string} idempotencyKey
      * @returns {object}
      */
-    static forcePaymentProcess(sessionToken, paymentId) {
+    static forcePaymentProcess(sessionToken, paymentId, idempotencyKey) {
         var methodName = "/Data/ForcePaymentProcess";
 
         var data = {
             "SessionToken": sessionToken,
             "PaymentId": paymentId,
+            "IdempotencyKey": idempotencyKey,
         };
 
         return CryptoCaller.callTibFinance(methodName, data);
@@ -998,7 +1008,7 @@ class ServerCaller {
     }
 
     /**
-     * Creates the free operation.
+     * Creates the free operation. This operation supports idempotency via the IdempotencyKey field.
      * @param {string} sessionToken
      * @param {string} merchantId
      * @param {string} billId
@@ -1018,9 +1028,10 @@ class ServerCaller {
      * @param {boolean} immediateTransfer
      * @param {string} statementDescription
      * @param {boolean} stopSameIdentifications
+     * @param {string} idempotencyKey
      * @returns {object}
      */
-    static createFreeOperation(sessionToken, merchantId, billId, customerId, paymentMethodId, transferType, referenceNumber, amount, language, transactionDueDate, transferTitle, transferDescription, transferExternalSystemNumber, transferFrequency, recurringEndDate, groupId, immediateTransfer, statementDescription, stopSameIdentifications) {
+    static createFreeOperation(sessionToken, merchantId, billId, customerId, paymentMethodId, transferType, referenceNumber, amount, language, transactionDueDate, transferTitle, transferDescription, transferExternalSystemNumber, transferFrequency, recurringEndDate, groupId, immediateTransfer, statementDescription, stopSameIdentifications, idempotencyKey) {
         var methodName = "/Data/CreateFreeOperation";
 
         var data = {
@@ -1043,20 +1054,22 @@ class ServerCaller {
             "ImmediateTransfer": immediateTransfer,
             "StatementDescription": statementDescription,
             "StopSameIdentifications": stopSameIdentifications,
+            "IdempotencyKey": idempotencyKey,
         };
 
         return CryptoCaller.callTibFinance(methodName, data);
     }
 
     /**
-     * Creates a batch of free operations (deposits or collections) in a single call. Validates that client onboarding (KYC) is completed before allowing free deposit operations.
+     * Creates a batch of free operations (deposits or collections) in a single call. Validates that client onboarding (KYC) is completed before allowing free deposit operations. This operation supports idempotency via the IdempotencyKey field.
      * @param {string} sessionToken
      * @param {Array} freeOperationBatchList
      * @param {string} groupId
      * @param {boolean} stopSameIdentifications
+     * @param {string} idempotencyKey
      * @returns {object}
      */
-    static createFreeOperationBatch(sessionToken, freeOperationBatchList, groupId, stopSameIdentifications) {
+    static createFreeOperationBatch(sessionToken, freeOperationBatchList, groupId, stopSameIdentifications, idempotencyKey) {
         var methodName = "/Data/CreateFreeOperationBatch";
 
         var data = {
@@ -1064,23 +1077,26 @@ class ServerCaller {
             "FreeOperationBatchList": freeOperationBatchList,
             "GroupId": groupId,
             "StopSameIdentifications": stopSameIdentifications,
+            "IdempotencyKey": idempotencyKey,
         };
 
         return CryptoCaller.callTibFinance(methodName, data);
     }
 
     /**
-     * Reverts (cancels or reverses) a transfer. For pending gateway payments, deletes the transfer and its public token. For processed payments, creates reversal operations for each non-fee operation. Rejects transfers over $5,000 or wallet-type transfers. For supplier transfers, only the paying merchant (fee-payer) can revert; the recipient supplier cannot revert a transfer they did not create.
+     * Reverts (cancels or reverses) a transfer. For pending gateway payments, deletes the transfer and its public token. For processed payments, creates reversal operations for each non-fee operation. Rejects transfers over $5,000 or wallet-type transfers. For supplier transfers, only the paying merchant (fee-payer) can revert; the recipient supplier cannot revert a transfer they did not create. This operation supports idempotency via the IdempotencyKey field.
      * @param {string} sessionToken
      * @param {string} transferId
+     * @param {string} idempotencyKey
      * @returns {object}
      */
-    static revertTransfer(sessionToken, transferId) {
+    static revertTransfer(sessionToken, transferId, idempotencyKey) {
         var methodName = "/Data/RevertTransfer";
 
         var data = {
             "SessionToken": sessionToken,
             "TransferId": transferId,
+            "IdempotencyKey": idempotencyKey,
         };
 
         return CryptoCaller.callTibFinance(methodName, data);
@@ -1150,26 +1166,28 @@ class ServerCaller {
     }
 
     /**
-     * Relaunches (retries) a previously failed transfer for a merchant. Resets the failed payment in the database for reprocessing and sends an internal notification email with the transfer details.
+     * Relaunches (retries) a previously failed transfer for a merchant. Resets the failed payment in the database for reprocessing and sends an internal notification email with the transfer details. This operation supports idempotency via the IdempotencyKey field.
      * @param {string} sessionToken
      * @param {string} transferId
      * @param {string} merchantId
+     * @param {string} idempotencyKey
      * @returns {object}
      */
-    static relaunchMerchantFailedTransfer(sessionToken, transferId, merchantId) {
+    static relaunchMerchantFailedTransfer(sessionToken, transferId, merchantId, idempotencyKey) {
         var methodName = "/Data/RelaunchMerchantFailedTransfer";
 
         var data = {
             "SessionToken": sessionToken,
             "TransferId": transferId,
             "MerchantId": merchantId,
+            "IdempotencyKey": idempotencyKey,
         };
 
         return CryptoCaller.callTibFinance(methodName, data);
     }
 
     /**
-     * Creates a payment transfer from the calling merchant to a supplier. Validates both merchants, runs business rules on the sending merchant's limits, creates the transfer as a free collection, and optionally creates a bill. Notifies the supplier unless client approval is required.
+     * Creates a payment transfer from the calling merchant to a supplier. Validates both merchants, runs business rules on the sending merchant's limits, creates the transfer as a free collection, and optionally creates a bill. Notifies the supplier unless client approval is required. This operation supports idempotency via the IdempotencyKey field.
      * @param {string} sessionToken
      * @param {string} merchantId
      * @param {number} amount
@@ -1182,9 +1200,10 @@ class ServerCaller {
      * @param {string} billNumber
      * @param {string} billDescription
      * @param {string} billTitle
+     * @param {string} idempotencyKey
      * @returns {object}
      */
-    static createSupplierTransfer(sessionToken, merchantId, amount, transferDueDate, targetMerchantId, currency, language, transferFrequency, recurringEndDate, billNumber, billDescription, billTitle) {
+    static createSupplierTransfer(sessionToken, merchantId, amount, transferDueDate, targetMerchantId, currency, language, transferFrequency, recurringEndDate, billNumber, billDescription, billTitle, idempotencyKey) {
         var methodName = "/Data/CreateSupplierTransfer";
 
         var data = {
@@ -1200,6 +1219,7 @@ class ServerCaller {
             "BillNumber": billNumber,
             "BillDescription": billDescription,
             "BillTitle": billTitle,
+            "IdempotencyKey": idempotencyKey,
         };
 
         return CryptoCaller.callTibFinance(methodName, data);
@@ -1406,6 +1426,23 @@ class ServerCaller {
             "ServiceId": serviceId,
             "From": from,
             "To": to,
+        };
+
+        return CryptoCaller.callTibFinance(methodName, data);
+    }
+
+    /**
+     * Verifies the 2FA setup after user scans QR code and enters the code. Enables 2FA for the user once verification succeeds.
+     * @param {string} sessionToken
+     * @param {string} twoFactorCode
+     * @returns {object}
+     */
+    static verify2FASetup(sessionToken, twoFactorCode) {
+        var methodName = "/Data/Verify2FASetup";
+
+        var data = {
+            "SessionToken": sessionToken,
+            "TwoFactorCode": twoFactorCode,
         };
 
         return CryptoCaller.callTibFinance(methodName, data);
