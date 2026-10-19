@@ -8,7 +8,7 @@ class ServerCaller {
     }
 
     /**
-     * Creates the session.
+     * Opens a client-level session for a user who has client-level access to the given ClientId. Send the returned SessionId as SessionToken on the following calls. For a merchant-level or service-level access, use GetLoginAccessList, then Login.
      * @param {string} clientId
      * @param {string} username
      * @param {string} password
@@ -21,6 +21,46 @@ class ServerCaller {
             "ClientId": clientId,
             "Username": username,
             "Password": password,
+        };
+
+        return CryptoCaller.callTibFinance(methodName, data);
+    }
+
+    /**
+     * Lists the accesses of a user. Each entry is one access that Login can open a session on (usually a client, a merchant or a service) and gives the LoginsUserRelationsId to pass to Login.
+     * @param {string} clientId
+     * @param {string} username
+     * @param {string} password
+     * @returns {object}
+     */
+    static getLoginAccessList(clientId, username, password) {
+        var methodName = "/Data/GetLoginAccessList";
+
+        var data = {
+            "ClientId": clientId,
+            "Username": username,
+            "Password": password,
+        };
+
+        return CryptoCaller.callTibFinance(methodName, data);
+    }
+
+    /**
+     * Opens a session on one access of a user, usually a client, a merchant or a service. Call GetLoginAccessList first and pass the LoginsUserRelationsId of the access to open. Send the returned SessionId as SessionToken on the following calls. On a merchant-level session, each MerchantId described as automatically set for merchant-level logins takes the session's merchant, whatever value is sent.
+     * @param {string} clientId
+     * @param {string} username
+     * @param {string} password
+     * @param {string} loginsUserRelationsId
+     * @returns {object}
+     */
+    static login(clientId, username, password, loginsUserRelationsId) {
+        var methodName = "/Data/Login";
+
+        var data = {
+            "ClientId": clientId,
+            "Username": username,
+            "Password": password,
+            "LoginsUserRelationsId": loginsUserRelationsId,
         };
 
         return CryptoCaller.callTibFinance(methodName, data);
