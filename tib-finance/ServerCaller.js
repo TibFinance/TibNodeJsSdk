@@ -1555,5 +1555,22 @@ class ServerCaller {
         return CryptoCaller.callTibFinance(methodName, data);
     }
 
+    /**
+     * Lists the transfers of your services that are waiting to be approved or declined in the portal, the newest first. The list is not paged. A payment to a supplier is listed for the paying merchant and for the supplier; only the paying merchant can approve or decline it.
+     * @param {string} sessionToken
+     * @param {string} serviceId
+     * @returns {object}
+     */
+    static getPendingTransferApprovals(sessionToken, serviceId) {
+        var methodName = "/Data/GetPendingTransferApprovals";
+
+        var data = {
+            "SessionToken": sessionToken,
+            "ServiceId": serviceId,
+        };
+
+        return CryptoCaller.callTibFinance(methodName, data);
+    }
+
 }
 exports.ServerCaller = ServerCaller;
